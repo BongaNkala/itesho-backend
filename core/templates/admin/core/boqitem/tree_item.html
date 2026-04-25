@@ -1,0 +1,33 @@
+{% load i18n %}
+<tr class="boq-item-level-{{ level }}" data-parent="{{ item.parent_id|default:'' }}" data-level="{{ level }}" id="row-{{ item.id }}">
+    <td style="padding-left: {% widthratio level 1 20 %}px;">
+        {% if item.children_list %}
+            <span class="expand-btn" data-toggle="{{ item.id }}" onclick="toggleChildren('{{ item.id }}')">▼</span>
+        {% else %}
+            <span style="width:28px; display:inline-block;"></span>
+        {% endif %}
+        <span class="boq-item-code">{{ item.item_code }}</span>
+    </td>
+    <td>{{ item.description }}</td>
+    <td>{{ item.unit }}</td>
+    <td>{{ item.planned_quantity|floatformat:2 }}</td>
+    <td>R{{ item.rate|floatformat:2 }}</td>
+    <td>R{% widthratio item.planned_quantity 1 item.rate|floatformat:2 %}</td>
+    <td>{{ item.approved_quantity|floatformat:2 }}</td>
+    <td>
+        <div style="width:120px; background:#e5e7eb; border-radius:4px; overflow:hidden;">
+            <div style="width:{{ item.progress_percentage|default:0|floatformat:1 }}%; background:#f97316; height:24px; text-align:center; color:white; font-size:11px; line-height:24px;">
+                {{ item.progress_percentage|default:0|floatformat:1 }}%
+            </div>
+        </div>
+    </td>
+    <td>
+        <a href="{{ item.id }}/change/" style="color:#3b82f6;">Edit</a> |
+        <a href="{{ item.id }}/delete/" style="color:#dc2626;">Delete</a>
+    </td>
+</tr>
+{% if item.children_list %}
+    {% for child in item.children_list %}
+        {% include "admin/core/boqitem/tree_item.html" with item=child level=level|add:1 %}
+    {% endfor %}
+{% endif %}

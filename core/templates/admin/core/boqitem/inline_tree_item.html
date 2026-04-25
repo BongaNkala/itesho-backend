@@ -1,0 +1,27 @@
+{% load i18n %}
+<tr class="boq-item-level-{{ level }}" data-parent="{{ item.parent_id|default:'' }}" data-level="{{ level }}" id="row-{{ item.id }}">
+  <td style="padding-left: {% widthratio level 1 20 %}px;">
+    {% if item.children.all %}
+      <span class="expand-btn" data-toggle="{{ item.id }}" onclick="toggleChildrenBOQ('{{ item.id }}')">▼</span>
+    {% else %}
+      <span style="width:28px; display:inline-block;"></span>
+    {% endif %}
+    <span class="boq-item-code">{{ item.item_code }}</span>
+  </td>
+  <td>{{ item.description }}</td>
+  <td>{{ item.unit }}</td>
+  <td>{{ item.level }}</td>
+  <td>{{ item.parent.item_code|default:"-" }}</td>
+  <td>{{ item.planned_quantity|floatformat:2 }}</td>
+  <td>R{{ item.rate|floatformat:2 }}</td>
+  <td>{{ item.approved_quantity|floatformat:2 }}</td>
+  <td>
+    <a href="{{ item.id }}/change/" style="color:#3b82f6;">Edit</a> |
+    <a href="{{ item.id }}/delete/" style="color:#dc2626;">Delete</a>
+  </td>
+</tr>
+{% if item.children.all %}
+  {% for child in item.children.all %}
+    {% include "admin/core/boqitem/inline_tree_item.html" with item=child level=level|add:1 %}
+  {% endfor %}
+{% endif %}

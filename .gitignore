@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.venv
+
+# Database
+*.db
+*.sqlite3
+
+# Migrations (optional - uncomment if you want to exclude)
+# */migrations/*.py
+# init/migrations/__init__.py
+
+# Static files
+staticfiles/
+static/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,112 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.boq-item-level-1 { background-color: #fffbeb; }
+.boq-item-level-1 td:first-child { border-left: 4px solid #f97316; }
+.boq-item-level-2 { background-color: #eff6ff; }
+.boq-item-level-2 td:first-child { border-left: 4px solid #3b82f6; }
+.boq-item-level-3 { background-color: #ecfdf5; }
+.boq-item-level-3 td:first-child { border-left: 4px solid #10b981; }
+.boq-item-code-level-1 { color: #ea580c; font-weight: bold; }
+.boq-item-code-level-2 { color: #2563eb; font-weight: 500; }
+.boq-item-code-level-3 { color: #059669; }
+.expand-btn {
+    cursor: pointer;
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+    font-size: 12px;
+    background: none;
+    border: none;
+}
+.expand-btn:hover { background: #e5e7eb; border-radius: 4px; }
+</style>
+<script>
+function toggleChildren(parentId) {
+    var children = document.querySelectorAll('[data-parent=\"' + parentId + '\"]');
+    var btn = document.querySelector('[data-toggle=\"' + parentId + '\"]');
+    var isExpanded = false;
+    for (var i = 0; i < children.length; i++) {
+        if (children[i].style.display === 'none') {
+            children[i].style.display = '';
+            isExpanded = true;
+        } else {
+            children[i].style.display = 'none';
+        }
+    }
+    if (btn) {
+        btn.textContent = isExpanded ? '▼' : '▶';
+    }
+}
+function expandAll() {
+    var btns = document.querySelectorAll('[data-toggle]');
+    for (var i = 0; i < btns.length; i++) {
+        var parentId = btns[i].getAttribute('data-toggle');
+        var children = document.querySelectorAll('[data-parent=\"' + parentId + '\"]');
+        for (var j = 0; j < children.length; j++) {
+            children[j].style.display = '';
+        }
+        btns[i].textContent = '▼';
+    }
+}
+function collapseAll() {
+    var btns = document.querySelectorAll('[data-toggle]');
+    for (var i = 0; i < btns.length; i++) {
+        var parentId = btns[i].getAttribute('data-toggle');
+        var children = document.querySelectorAll('[data-parent=\"' + parentId + '\"]');
+        for (var j = 0; j < children.length; j++) {
+            children[j].style.display = 'none';
+        }
+        btns[i].textContent = '▶';
+    }
+}
+</script>
+{% endblock %}
+
+{% block after_field_sets %}
+{{ block.super }}
+
+{% if original %}
+<div class="module" style="margin-top: 20px;">
+    <h2>BOQ Items (Bill of Quantities)</h2>
+    <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">
+        {% if boq_tree %}
+            <div style="margin-bottom: 15px;">
+                <button onclick="expandAll()" class="button" style="background: #f97316; color: white;">Expand All</button>
+                <button onclick="collapseAll()" class="button" style="margin-left: 5px;">Collapse All</button>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f3f4f6;">
+                        <th style="padding: 10px; text-align: left;">Item Code</th>
+                        <th style="padding: 10px; text-align: left;">Description</th>
+                        <th style="padding: 10px; text-align: left;">Unit</th>
+                        <th style="padding: 10px; text-align: right;">Planned Qty</th>
+                        <th style="padding: 10px; text-align: right;">Rate</th>
+                        <th style="padding: 10px; text-align: right;">Planned Cost</th>
+                        <th style="padding: 10px; text-align: right;">Approved Qty</th>
+                        <th style="padding: 10px; text-align: center;">Progress</th>
+                        <th style="padding: 10px; text-align: center;"></th>
+                    </table>
+                </thead>
+                <tbody>
+                    {% for item in boq_tree %}
+                        {% include "admin/core/project/boq_tree_item.html" with item=item level=1 %}
+                    {% endfor %}
+                </tbody>
+             cul
+            <div style="margin-top: 15px; padding: 10px; background: #f3f4f6; border-radius: 4px;">
+                <strong>Add new BOQ item:</strong> Use the inline form below to add sections, subsections, or line items.
+            </div>
+        {% else %}
+            <p style="text-align: center; padding: 40px; color: #6b7280;">No BOQ items yet.</p>
+            <p style="text-align: center;">Use the inline form below to add BOQ items.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

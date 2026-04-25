@@ -1,0 +1,153 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.boq-tree-container {
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+}
+.boq-tree-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f97316;
+}
+.boq-tree-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ea580c;
+}
+.boq-tree-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.boq-tree-table th {
+    text-align: left;
+    padding: 12px;
+    background-color: #f3f4f6;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+}
+.boq-tree-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.boq-item-level-1 {
+    background-color: #fffbeb;
+}
+.boq-item-level-1 .boq-item-code {
+    color: #ea580c;
+    font-weight: bold;
+}
+.boq-item-level-2 {
+    background-color: #eff6ff;
+}
+.boq-item-level-2 .boq-item-code {
+    color: #2563eb;
+    font-weight: 500;
+}
+.boq-item-level-3 {
+    background-color: #ecfdf5;
+}
+.boq-item-level-3 .boq-item-code {
+    color: #059669;
+}
+.boq-item-level-1 td:first-child { border-left: 4px solid #f97316; }
+.boq-item-level-2 td:first-child { border-left: 4px solid #3b82f6; }
+.boq-item-level-3 td:first-child { border-left: 4px solid #10b981; }
+.expand-btn {
+    cursor: pointer;
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+    font-size: 12px;
+}
+</style>
+<script>
+function toggleChildren(parentId) {
+    var children = document.querySelectorAll('[data-parent=\"' + parentId + '\"]');
+    var btn = document.querySelector('[data-toggle=\"' + parentId + '\"]');
+    var isExpanded = false;
+    for (var i = 0; i < children.length; i++) {
+        if (children[i].style.display === 'none') {
+            children[i].style.display = '';
+            isExpanded = true;
+        } else {
+            children[i].style.display = 'none';
+        }
+    }
+    if (btn) {
+        btn.textContent = isExpanded ? '▼' : '▶';
+    }
+}
+function expandAll() {
+    var btns = document.querySelectorAll('[data-toggle]');
+    for (var i = 0; i < btns.length; i++) {
+        var parentId = btns[i].getAttribute('data-toggle');
+        var children = document.querySelectorAll('[data-parent=\"' + parentId + '\"]');
+        for (var j = 0; j < children.length; j++) {
+            children[j].style.display = '';
+        }
+        btns[i].textContent = '▼';
+    }
+}
+function collapseAll() {
+    var btns = document.querySelectorAll('[data-toggle]');
+    for (var i = 0; i < btns.length; i++) {
+        var parentId = btns[i].getAttribute('data-toggle');
+        var children = document.querySelectorAll('[data-parent=\"' + parentId + '\"]');
+        for (var j = 0; j < children.length; j++) {
+            children[j].style.display = 'none';
+        }
+        btns[i].textContent = '▶';
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="boq-tree-container">
+    <div class="boq-tree-header">
+        <span class="boq-tree-title">BOQ Hierarchy</span>
+        <div>
+            <button onclick="expandAll()" class="button" style="margin-right: 5px;">Expand All</button>
+            <button onclick="collapseAll()" class="button">Collapse All</button>
+        </div>
+    </div>
+    
+    <table class="boq-tree-table">
+        <thead>
+            <tr>
+                <th style="width:15%">Item Code</th>
+                <th style="width:30%">Description</th>
+                <th style="width:8%">Unit</th>
+                <th style="width:10%">Planned Qty</th>
+                <th style="width:8%">Rate</th>
+                <th style="width:12%">Planned Cost</th>
+                <th style="width:10%">Approved Qty</th>
+                <th style="width:12%">Progress</th>
+                <th style="width:10%">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cl.queryset %}
+                {% if not item.parent %}
+                    {% include "admin/core/boqitem/tree_item.html" with item=item level=1 %}
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="submit-row" style="margin-top: 20px;">
+        <a href="add/?project={{ project_id }}" class="button" style="background:#f97316; color:white;">Add BOQ Item</a>
+        <a href="../" class="button">Back to Projects</a>
+    </div>
+</div>
+{% endblock %}

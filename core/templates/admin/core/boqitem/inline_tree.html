@@ -1,0 +1,280 @@
+{% load i18n admin_urls static %}
+<div class="inline-group" id="{{ inline_admin_formset.formset.prefix }}-group">
+  <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+  {{ inline_admin_formset.formset.management_form }}
+  {{ inline_admin_formset.formset.non_form_errors }}
+
+  <div class="boq-tree-container">
+    <div class="boq-tree-header">
+      <span class="boq-tree-title">BOQ Hierarchy</span>
+      <div>
+        <button type="button" onclick="expandAllBOQ()" class="button" style="margin-right: 5px;">Expand All</button>
+        <button type="button" onclick="collapseAllBOQ()" class="button">Collapse All</button>
+      </div>
+    </div>
+    
+    <table class="boq-tree-table">
+      <thead>
+        <tr>
+          <th style="width:15%">Item Code</th>
+          <th style="width:25%">Description</th>
+          <th style="width:8%">Unit</th>
+          <th style="width:8%">Level</th>
+          <th style="width:12%">Parent</th>
+          <th style="width:10%">Planned Qty</th>
+          <th style="width:8%">Rate</th>
+          <th style="width:10%">Approved Qty</th>
+          <th style="width:10%">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="boq-items-tbody">
+        {% for item in inline_admin_formset.formset.queryset %}
+          {% if not item.parent %}
+            {% include "admin/core/boqitem/inline_tree_item.html" with item=item level=1 %}
+          {% endif %}
+        {% endfor %}
+        
+        <!-- Add new item row -->
+        <tr class="add-row">
+          <td colspan="9" style="padding: 15px; text-align: center; background: #f8f9fa;">
+            <button type="button" onclick="showAddForm()" class="button" style="background: #f97316; color: white;">+ Add BOQ Item</button>
+           </td>
+         </tr>
+        
+        <!-- Add form template -->
+        <tr id="add-boq-form" style="display: none;">
+          <td colspan="9" style="padding: 15px; background: #fffbeb;">
+            <div style="display: grid; grid-template-columns: repeat(9, 1fr); gap: 10px;">
+              <input type="text" id="new_item_code" placeholder="Item Code" style="padding: 5px;">
+              <input type="text" id="new_description" placeholder="Description" style="padding: 5px;">
+              <select id="new_unit" style="padding: 5px;">
+                <option value="each">each</option>
+                <option value="m³">m³</option>
+                <option value="m²">m²</option>
+                <option value="m">m</option>
+                <option value="ton">ton</option>
+                <option value="kg">kg</option>
+                <option value="hour">hour</option>
+                <option value="day">day</option>
+                <option value="lump_sum">lump_sum</option>
+              </select>
+              <select id="new_level" style="padding: 5px;">
+                <option value="1">Level 1 - Section</option>
+                <option value="2">Level 2 - Subsection</option>
+                <option value="3">Level 3 - Line Item</option>
+              </select>
+              <select id="new_parent" style="padding: 5px;">
+                <option value="">-- No Parent (Top Level) --</option>
+                {% for item in inline_admin_formset.formset.queryset %}
+                  {% if item.level == 1 %}
+                    <option value="{{ item.id }}" class="level-1">├─ Section: {{ item.item_code }} - {{ item.description }}</option>
+                  {% endif %}
+                  {% if item.level == 2 %}
+                    <option value="{{ item.id }}" class="level-2">&nbsp;&nbsp;├─ Subsection: {{ item.item_code }} - {{ item.description }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+              <input type="number" id="new_planned_qty" placeholder="Planned Qty" style="padding: 5px;" step="0.01">
+              <input type="number" id="new_rate" placeholder="Rate (R)" style="padding: 5px;" step="0.01">
+              <input type="number" id="new_approved_qty" placeholder="Approved Qty" style="padding: 5px;" step="0.01" value="0">
+              <div>
+                <button type="button" onclick="saveNewBOQItem()" style="background: #059669; color: white; padding: 5px 10px;">Save</button>
+                <button type="button" onclick="hideAddForm()" style="background: #6b7280; color: white; padding: 5px 10px;">Cancel</button>
+              </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 12px; color: #6b7280;">
+              <span>📌 Level 1 = Section | Level 2 = Subsection (requires a Section parent) | Level 3 = Line Item (requires a Section or Subsection parent)</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+.boq-tree-container {
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+.boq-tree-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f97316;
+}
+.boq-tree-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ea580c;
+}
+.boq-tree-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.boq-tree-table th {
+    text-align: left;
+    padding: 12px;
+    background-color: #f3f4f6;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+}
+.boq-tree-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.boq-item-level-1 {
+    background-color: #fffbeb;
+}
+.boq-item-level-1 .boq-item-code {
+    color: #ea580c;
+    font-weight: bold;
+}
+.boq-item-level-2 {
+    background-color: #eff6ff;
+}
+.boq-item-level-2 .boq-item-code {
+    color: #2563eb;
+    font-weight: 500;
+}
+.boq-item-level-3 {
+    background-color: #ecfdf5;
+}
+.boq-item-level-3 .boq-item-code {
+    color: #059669;
+}
+.boq-item-level-1 td:first-child { border-left: 4px solid #f97316; }
+.boq-item-level-2 td:first-child { border-left: 4px solid #3b82f6; }
+.boq-item-level-3 td:first-child { border-left: 4px solid #10b981; }
+.expand-btn {
+    cursor: pointer;
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+    font-size: 12px;
+}
+.level-1 { font-weight: bold; color: #ea580c; }
+.level-2 { color: #2563eb; }
+</style>
+
+<script>
+function toggleChildrenBOQ(parentId) {
+    var children = document.querySelectorAll('[data-parent="' + parentId + '"]');
+    var btn = document.querySelector('[data-toggle="' + parentId + '"]');
+    var isExpanded = false;
+    for (var i = 0; i < children.length; i++) {
+        if (children[i].style.display === 'none') {
+            children[i].style.display = '';
+            isExpanded = true;
+        } else {
+            children[i].style.display = 'none';
+        }
+    }
+    if (btn) {
+        btn.textContent = isExpanded ? '▼' : '▶';
+    }
+}
+
+function expandAllBOQ() {
+    var btns = document.querySelectorAll('[data-toggle]');
+    for (var i = 0; i < btns.length; i++) {
+        var parentId = btns[i].getAttribute('data-toggle');
+        var children = document.querySelectorAll('[data-parent="' + parentId + '"]');
+        for (var j = 0; j < children.length; j++) {
+            children[j].style.display = '';
+        }
+        btns[i].textContent = '▼';
+    }
+}
+
+function collapseAllBOQ() {
+    var btns = document.querySelectorAll('[data-toggle]');
+    for (var i = 0; i < btns.length; i++) {
+        var parentId = btns[i].getAttribute('data-toggle');
+        var children = document.querySelectorAll('[data-parent="' + parentId + '"]');
+        for (var j = 0; j < children.length; j++) {
+            children[j].style.display = 'none';
+        }
+        btns[i].textContent = '▶';
+    }
+}
+
+function showAddForm() {
+    document.getElementById('add-boq-form').style.display = '';
+}
+
+function hideAddForm() {
+    document.getElementById('add-boq-form').style.display = 'none';
+    // Clear form fields
+    document.getElementById('new_item_code').value = '';
+    document.getElementById('new_description').value = '';
+    document.getElementById('new_planned_qty').value = '';
+    document.getElementById('new_rate').value = '';
+    document.getElementById('new_approved_qty').value = '0';
+}
+
+function saveNewBOQItem() {
+    var projectId = {{ original.id|default:0 }};
+    var itemCode = document.getElementById('new_item_code').value.trim();
+    var description = document.getElementById('new_description').value.trim();
+    var unit = document.getElementById('new_unit').value;
+    var level = parseInt(document.getElementById('new_level').value);
+    var parentId = document.getElementById('new_parent').value;
+    var plannedQty = parseFloat(document.getElementById('new_planned_qty').value) || 0;
+    var rate = parseFloat(document.getElementById('new_rate').value) || 0;
+    var approvedQty = parseFloat(document.getElementById('new_approved_qty').value) || 0;
+    
+    if (!itemCode) {
+        alert('Item Code is required');
+        return;
+    }
+    if (!description) {
+        alert('Description is required');
+        return;
+    }
+    
+    var token = document.querySelector('[name="csrfmiddlewaretoken"]')?.value || '';
+    
+    var bodyData = {
+        project: projectId,
+        item_code: itemCode,
+        description: description,
+        unit: unit,
+        level: level,
+        planned_quantity: plannedQty,
+        rate: rate,
+        approved_quantity: approvedQty
+    };
+    
+    if (parentId) {
+        bodyData.parent = parseInt(parentId);
+    }
+    
+    fetch('/api/boq/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': token
+        },
+        body: JSON.stringify(bodyData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id) {
+            alert('BOQ item added successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + JSON.stringify(data));
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error);
+    });
+}
+</script>

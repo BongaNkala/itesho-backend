@@ -1,0 +1,33 @@
+{% load i18n %}
+
+<tr class="boq-item-level-{{ level }}" data-parent="{{ item.parent_id|default:'' }}" id="row-{{ item.id }}">
+    <td style="padding: 10px; padding-left: {% widthratio level 1 20 %}px;">
+        {% if item.children_list %}
+            <button class="expand-btn" data-toggle="{{ item.id }}" onclick="toggleChildren('{{ item.id }}')">▼</button>
+        {% else %}
+            <span style="width:28px; display:inline-block;"></span>
+        {% endif %}
+        <span class="boq-item-code-level-{{ level }}">{{ item.item_code }}</span>
+    </td>
+    <td style="padding: 10px;">{{ item.description }}</td>
+    <td style="padding: 10px;">{{ item.unit }}</td>
+    <td style="padding: 10px; text-align: right;">{{ item.planned_quantity|floatformat:2 }}</td>
+    <td style="padding: 10px; text-align: right;">R{{ item.rate|floatformat:2 }}</td>
+    <td style="padding: 10px; text-align: right;">R{{ item.planned_cost|floatformat:2 }}</td>
+    <td style="padding: 10px; text-align: right;">{{ item.approved_quantity|floatformat:2 }}</td>
+    <td style="padding: 10px; text-align: center;">
+        <div style="width:100px; background:#e5e7eb; border-radius:4px; overflow:hidden; display:inline-block;">
+            <div style="width:{{ item.progress_percentage|default:0|floatformat:1 }}%; background:#f97316; height:20px; text-align:center; color:white; font-size:10px; line-height:20px;">
+                {{ item.progress_percentage|default:0|floatformat:1 }}%
+            </div>
+        </div>
+    </td>
+    <td style="padding: 10px; text-align: center;">
+        <span style="color: #6b7280; font-size: 12px;">Edit using form below</span>
+    </td>
+</tr>
+{% if item.children_list %}
+    {% for child in item.children_list %}
+        {% include "admin/core/project/boq_tree_item.html" with item=child level=level|add:1 %}
+    {% endfor %}
+{% endif %}
