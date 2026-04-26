@@ -85,9 +85,11 @@ class DailyLogViewSet(viewsets.ModelViewSet):
         user = request.user
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            # Use status from request if provided, otherwise default to 'submitted'
+            status_value = request.data.get('status', 'submitted')
             serializer.save(
                 contractor=user,
-                status='draft'
+                status=status_value
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
