@@ -2,7 +2,7 @@ services:
   - type: web
     name: itesho-backend
     runtime: python
-    buildCommand: pip install -r requirements.txt && python render_migrate.py
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn itesho.wsgi:application
     envVars:
       - key: DATABASE_URL
@@ -12,6 +12,8 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: false
+        value: False
       - key: ALLOWED_HOSTS
-        value: .onrender.com,localhost,127.0.0.1
+        value: .onrender.com,itesho-backend.onrender.com,localhost
+      - key: PYTHON_VERSION
+        value: 3.11.5
