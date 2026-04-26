@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.db.models import Sum
+from django.db.models import Sum, Sum
 from django.utils import timezone
 from .models import (
     Project, BOQItem, DailyLog, DailyLogEntry, UserProfile,
