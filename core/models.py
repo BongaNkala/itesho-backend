@@ -30,7 +30,7 @@ class ApprovalLevel(models.Model):
     """Flexible approval levels - can be customized per project"""
     project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='approval_levels')
     level_order = models.IntegerField()
-    level_name = models.CharField(max_length=50)  # e.g., "Site Engineer", "Consultant", "PM", "Municipal"
+    level_name = models.CharField(max_length=50)
     required_role = models.CharField(max_length=50, blank=True)
     required_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='required_approvals')
     is_mandatory = models.BooleanField(default=True)
@@ -73,11 +73,9 @@ class Project(models.Model):
         return self.name
     
     def get_approval_flow(self):
-        """Get the approval levels for this project"""
         return self.approval_levels.all().order_by('level_order')
     
     def get_approval_levels_list(self):
-        """Return list of level names for display"""
         return [level.level_name for level in self.get_approval_flow()]
     
     def update_progress(self):
@@ -173,9 +171,7 @@ class BOQItem(models.Model):
 
 class DailyLog(models.Model):
     STATUS_CHOICES = [
-        ('draft', 'Draft'),
-        ('submitted', 'Submitted'),
-        ('partially_approved', 'Partially Approved'),
+        ('submitted', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
@@ -253,12 +249,12 @@ class DailyLog(models.Model):
     next_day_plan = models.TextField(blank=True)
     resources_needed = models.TextField(blank=True)
     
-    # Multi-level Approval Tracking
-    current_level_index = models.IntegerField(default=0, help_text="Current approval level index (0-based)")
-    total_approval_levels = models.IntegerField(default=0)
+    # Simple Approval Tracking
+    current_level_index = models.IntegerField(default=0)
+    total_approval_levels = models.IntegerField(default=1)
     
     # Status
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='draft')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='submitted')
     submitted_at = models.DateTimeField(null=True, blank=True)
     
     reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_logs')
@@ -271,150 +267,29 @@ class DailyLog(models.Model):
     def __str__(self):
         return f"Daily Log - {self.project.name} - {self.log_date}"
     
-    def get_current_level(self):
-        """Get the current approval level object"""
-        levels = self.project.get_approval_flow()
-        if self.current_level_index < len(levels):
-            return levels[self.current_level_index]
-        return None
-    
-    def get_next_level(self):
-        """Get the next approval level object"""
-        levels = self.project.get_approval_flow()
-        if self.current_level_index + 1 < len(levels):
-            return levels[self.current_level_index + 1]
-        return None
-    
-    def get_levels_approved_count(self):
-        """Get number of approved levels"""
-        return ApprovalRecord.objects.filter(daily_log=self, action='approve').count()
-    
-    def get_approval_status_display(self):
-        """Get approval status for UI display"""
-        levels = self.project.get_approval_flow()
-        approval_records = {record.level_order: record for record in self.approval_records.all()}
+    def approve(self, reviewer, comments=None, seal_number=None, ip_address=None):
+        from django.db.models import Sum
         
-        status_list = []
-        for level in levels:
-            if level.level_order in approval_records:
-                record = approval_records[level.level_order]
-                status_list.append({
-                    'level': level.level_name,
-                    'level_order': level.level_order,
-                    'status': record.action,
-                    'approved_by': record.approver.username if record.approver else None,
-                    'approved_at': record.created_at,
-                    'comments': record.comments,
-                    'seal_number': record.seal_number
-                })
-            elif self.current_level_index > level.level_order:
-                status_list.append({
-                    'level': level.level_name,
-                    'level_order': level.level_order,
-                    'status': 'approved_missing_record',
-                    'approved_by': None,
-                    'approved_at': None,
-                    'comments': None
-                })
-            elif self.current_level_index == level.level_order and self.status != 'rejected':
-                status_list.append({
-                    'level': level.level_name,
-                    'level_order': level.level_order,
-                    'status': 'pending',
-                    'approved_by': None,
-                    'approved_at': None,
-                    'comments': None
-                })
-            else:
-                status_list.append({
-                    'level': level.level_name,
-                    'level_order': level.level_order,
-                    'status': 'waiting',
-                    'approved_by': None,
-                    'approved_at': None,
-                    'comments': None
-                })
-        
-        return status_list
-    
-    def can_user_approve(self, user):
-        """Check if user can approve at current level"""
-        current_level = self.get_current_level()
-        if not current_level:
-            return False
-        
-        if current_level.required_user and current_level.required_user != user:
-            return False
-        
-        if current_level.required_role:
-            profile = getattr(user, 'profile', None)
-            if not profile or profile.role != current_level.required_role:
-                return False
-        
-        return True
-    
-    def approve(self, reviewer, comments, seal_number=None, ip_address=None):
-        """Approve at current level and move to next"""
-        current_level = self.get_current_level()
-        
-        if not current_level:
-            raise ValueError("No approval level found")
-        
-        if not self.can_user_approve(reviewer):
-            raise PermissionError("User not authorized to approve at this level")
-        
-        # Create approval record
-        ApprovalRecord.objects.create(
-            daily_log=self,
-            level_order=current_level.level_order,
-            level_name=current_level.level_name,
-            approver=reviewer,
-            action='approve',
-            comments=comments,
-            seal_number=seal_number or '',
-            ip_address=ip_address
-        )
-        
-        # Move to next level or mark as Approved
-        levels = list(self.project.get_approval_flow())
-        
-        if self.current_level_index + 1 >= len(levels):
-            self.status = 'approved'
-            self.current_level_index = len(levels)
-        else:
-            self.current_level_index += 1
-            self.status = 'partially_approved'
-        
+        self.status = 'approved'
+        self.reviewed_by = reviewer
+        self.reviewed_at = timezone.now()
         self.save()
         
-        # Update BOQ if Approved
-        if self.status == 'approved':
-            for entry in self.entries.all():
-                entry.boq_item.approved_quantity += entry.quantity
-                entry.boq_item.save()
-                # Update parent items
-                parent = entry.boq_item.parent
-                while parent:
-                    total_approved = parent.children.aggregate(total=models.Sum('approved_quantity'))['total'] or 0
-                    parent.approved_quantity = total_approved
-                    parent.save()
-                    parent = parent.parent
-            self.project.update_progress()
+        # Update BOQ quantities
+        for entry in self.entries.all():
+            entry.boq_item.approved_quantity += entry.quantity
+            entry.boq_item.save()
+            
+            parent = entry.boq_item.parent
+            while parent:
+                total_approved = parent.children.aggregate(total=Sum('approved_quantity'))['total'] or 0
+                parent.approved_quantity = total_approved
+                parent.save()
+                parent = parent.parent
+        
+        self.project.update_progress()
     
     def reject(self, reviewer, comments, ip_address=None):
-        """Reject at current level"""
-        current_level = self.get_current_level()
-        
-        ApprovalRecord.objects.create(
-            daily_log=self,
-            level_order=current_level.level_order if current_level else 0,
-            level_name=current_level.level_name if current_level else 'Unknown',
-            approver=reviewer,
-            action='reject',
-            comments=comments,
-            ip_address=ip_address
-        )
-        
         self.status = 'rejected'
         self.rejection_reason = comments
         self.save()
@@ -434,15 +309,14 @@ class DailyLogEntry(models.Model):
 
 
 class ApprovalRecord(models.Model):
-    """Record of each approval action"""
     ACTION_CHOICES = [
         ('approve', 'Approved'),
         ('reject', 'Rejected'),
     ]
     
     daily_log = models.ForeignKey(DailyLog, on_delete=models.CASCADE, related_name='approval_records')
-    level_order = models.IntegerField()
-    level_name = models.CharField(max_length=50)
+    level_order = models.IntegerField(default=0)
+    level_name = models.CharField(max_length=50, default='Approval')
     approver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='approval_actions')
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     comments = models.TextField(blank=True)
@@ -451,7 +325,7 @@ class ApprovalRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.daily_log} - {self.level_name}: {self.action}"
+        return f"{self.daily_log} - {self.action}"
 
 
 class InspectionType(models.Model):

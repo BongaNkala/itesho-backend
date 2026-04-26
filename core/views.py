@@ -1,3 +1,4 @@
+
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -45,7 +46,7 @@ class BOQItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         project_id = self.request.query_params.get('project_id')
         if project_id:
-            return BOQItem.objects.filter(project_id=project_id, parent__isnull=True).order_by('order', 'item_code')
+            return BOQItem.objects.filter(project_id=project_id).order_by('item_code')
         return BOQItem.objects.none()
     
     def create(self, request, *args, **kwargs):
