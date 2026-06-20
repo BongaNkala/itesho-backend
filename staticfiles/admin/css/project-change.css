@@ -1,0 +1,399 @@
+/* ============================================================================
+   ITesho - Premium Project Change Page Styling
+   ============================================================================ */
+
+/* ============================================================================
+   MAIN CONTAINER
+   ============================================================================ */
+#project_form {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================================================
+   FIELDSET STYLING - Gradient Headers
+   ============================================================================ */
+.module h2, 
+.module caption, 
+.inline-group h2 {
+    background: linear-gradient(135deg, #1e3a5f 0%, #f97316 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 20px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+    border: none;
+}
+
+/* ============================================================================
+   FORM ROWS - Card Style
+   ============================================================================ */
+.form-row {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.form-row:hover {
+    border-color: #f97316;
+    box-shadow: 0 8px 25px rgba(249, 115, 22, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Subtle gradient overlay on hover */
+.form-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316, #fbbf24);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.form-row:hover::before {
+    opacity: 1;
+}
+
+/* ============================================================================
+   LABELS
+   ============================================================================ */
+.form-row label {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Required field indicator */
+.required label:after,
+.form-row .required label:after {
+    content: " *";
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* ============================================================================
+   INPUT FIELDS - Modern Style
+   ============================================================================ */
+.form-row input, 
+.form-row textarea, 
+.form-row select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+    background: white;
+}
+
+.form-row input:focus, 
+.form-row textarea:focus, 
+.form-row select:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+    outline: none;
+}
+
+/* Readonly fields */
+.form-row .readonly {
+    background: #f1f5f9;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #475569;
+    font-family: 'Courier New', monospace;
+    border: 1px solid #e2e8f0;
+}
+
+/* ============================================================================
+   HELP TEXT
+   ============================================================================ */
+.help, 
+.help-text {
+    color: #64748b;
+    font-size: 11px;
+    margin-top: 6px;
+    display: block;
+}
+
+/* ============================================================================
+   INLINE GROUP (BOQ Items)
+   ============================================================================ */
+.inline-group {
+    background: transparent;
+    margin-top: 35px;
+}
+
+.inline-related {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Inline header */
+.inline-related h3 {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    padding: 14px 20px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: none;
+}
+
+/* Inline table */
+.inline-related table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inline-related th {
+    background: #f8fafc;
+    padding: 12px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.inline-related td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Alternate row colors */
+.inline-related tbody tr:hover {
+    background: #fff7ed;
+}
+
+/* ============================================================================
+   ADD ANOTHER BUTTON
+   ============================================================================ */
+.add-row {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.add-row a {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.add-row a:hover {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+/* ============================================================================
+   SUBMIT ROW - Action Buttons
+   ============================================================================ */
+.submit-row {
+    margin-top: 35px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    text-align: right;
+    border: 1px solid #e2e8f0;
+}
+
+.submit-row input {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 28px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 12px;
+    font-size: 13px;
+}
+
+.submit-row input:hover {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.submit-row input[type="button"] {
+    background: #64748b;
+}
+
+.submit-row input[type="button"]:hover {
+    background: #475569;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+}
+
+/* ============================================================================
+   DELETE BUTTON
+   ============================================================================ */
+.deletelink {
+    background: #ef4444;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.deletelink:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================================================
+   PROGRESS BAR FOR BOQ ITEMS
+   ============================================================================ */
+.progress-bar {
+    width: 100px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 8px;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #f97316, #fbbf24);
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.5s ease;
+}
+
+/* ============================================================================
+   CUSTOM TOOLTIPS
+   ============================================================================ */
+.field-tooltip {
+    display: inline-block;
+    margin-left: 8px;
+    cursor: help;
+}
+
+.field-tooltip:hover {
+    color: #f97316;
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-row {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Staggered animation for form rows */
+.form-row:nth-child(1) { animation-delay: 0.05s; }
+.form-row:nth-child(2) { animation-delay: 0.1s; }
+.form-row:nth-child(3) { animation-delay: 0.15s; }
+.form-row:nth-child(4) { animation-delay: 0.2s; }
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+@media (max-width: 768px) {
+    #project_form {
+        padding: 16px;
+    }
+    
+    .form-row {
+        padding: 12px;
+    }
+    
+    .inline-related td {
+        display: block;
+        width: 100%;
+        padding: 8px;
+    }
+    
+    .inline-related th {
+        display: none;
+    }
+    
+    .submit-row {
+        text-align: center;
+    }
+    
+    .submit-row input {
+        margin: 5px;
+        width: calc(100% - 20px);
+    }
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT (if enabled)
+   ============================================================================ */
+@media (prefers-color-scheme: dark) {
+    .form-row {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .form-row label {
+        color: #f1f5f9;
+    }
+    
+    .inline-group th {
+        background: #0f172a;
+        color: #94a3b8;
+    }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+@media print {
+    .submit-row,
+    .add-row,
+    .deletelink {
+        display: none;
+    }
+    
+    .form-row {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}

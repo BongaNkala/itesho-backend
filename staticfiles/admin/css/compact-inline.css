@@ -1,0 +1,50 @@
+.inline-group .tabular td,
+.inline-group .tabular th {
+    padding: 4px 6px !important;
+}
+
+.inline-group .tabular input,
+.inline-group .tabular select,
+.inline-group .tabular textarea {
+    font-size: 11px;
+    padding: 3px 5px;
+}
+
+.inline-group .tabular textarea {
+    height: 38px;
+}
+
+.inline-group .tabular .field-item_code {
+    width: 8%;
+}
+
+.inline-group .tabular .field-description {
+    width: 22%;
+}
+
+.inline-group .tabular .field-unit {
+    width: 10%;
+}
+
+.inline-group .tabular .field-planned_quantity,
+.inline-group .tabular .field-rate,
+.inline-group .tabular .field-approved_quantity {
+    width: 10%;
+}
+
+.inline-group .tabular .help-block {
+    display: none;
+}
+
+.inline-group .add-row a {
+    background: #f97316;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.inline-group .add-row a:hover {
+    background: #ea580c;
+}

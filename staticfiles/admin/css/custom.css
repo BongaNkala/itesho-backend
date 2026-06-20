@@ -1,0 +1,313 @@
+/* ============================================================================
+   Jazzmin Tabs - Premium ITesho Styling
+   ============================================================================ */
+
+/* Main container */
+#jazzy-tabs {
+    margin-top: 20px;
+}
+
+/* Left side navigation tabs */
+#jazzy-tabs .nav-tabs {
+    border: none;
+    gap: 8px;
+}
+
+#jazzy-tabs .nav-link {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    color: #475569;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#jazzy-tabs .nav-link:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    transition: width 0.3s ease;
+}
+
+#jazzy-tabs .nav-link:hover {
+    background: #f8fafc;
+    border-color: #f97316;
+    transform: translateX(4px);
+}
+
+#jazzy-tabs .nav-link.active {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border-color: #f97316;
+    color: white;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+#jazzy-tabs .nav-link.active:before {
+    width: 4px;
+}
+
+/* Right side tab content */
+#jazzy-tabs .tab-content {
+    padding-left: 20px;
+}
+
+#jazzy-tabs .tab-pane {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Card styling inside tabs */
+#jazzy-tabs .card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    background: white;
+    overflow: hidden;
+}
+
+#jazzy-tabs .card-body {
+    padding: 28px;
+}
+
+/* Form groups */
+#jazzy-tabs .form-group {
+    margin-bottom: 24px;
+}
+
+#jazzy-tabs .form-group .row {
+    align-items: flex-start;
+}
+
+/* Labels */
+#jazzy-tabs .form-group label {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 13px;
+    padding-top: 10px;
+}
+
+/* Required field indicator */
+#jazzy-tabs .text-red {
+    color: #ef4444;
+}
+
+/* Input fields */
+#jazzy-tabs input[type="text"],
+#jazzy-tabs input[type="number"],
+#jazzy-tabs textarea,
+#jazzy-tabs select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+#jazzy-tabs input:focus,
+#jazzy-tabs textarea:focus,
+#jazzy-tabs select:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+    outline: none;
+}
+
+/* Readonly fields */
+#jazzy-tabs .readonly {
+    background: #f1f5f9;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #475569;
+    font-family: monospace;
+    border: 1px solid #e2e8f0;
+}
+
+/* Date field styling */
+#jazzy-tabs .date input {
+    display: inline-block;
+    width: auto;
+    margin-right: 10px;
+}
+
+#jazzy-tabs .datetimeshortcuts {
+    font-size: 12px;
+}
+
+#jazzy-tabs .datetimeshortcuts a {
+    color: #f97316;
+    text-decoration: none;
+}
+
+#jazzy-tabs .datetimeshortcuts a:hover {
+    color: #ea580c;
+}
+
+/* Timezone warning */
+#jazzy-tabs .timezonewarning {
+    color: #64748b;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+/* Help text */
+#jazzy-tabs .help-block {
+    color: #64748b;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+/* Calendar icon */
+#jazzy-tabs .date-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%23f97316"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>');
+    background-size: contain;
+}
+
+/* Select2 styling */
+#jazzy-tabs .select2-container--default .select2-selection--single {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    height: 42px;
+    padding: 5px;
+}
+
+#jazzy-tabs .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px;
+    color: #1e293b;
+}
+
+#jazzy-tabs .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px;
+}
+
+#jazzy-tabs .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #f97316;
+}
+
+/* Related widget buttons */
+#jazzy-tabs .related-widget-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#jazzy-tabs .related-widget-wrapper select {
+    flex: 1;
+}
+
+#jazzy-tabs .related-widget-wrapper a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f8fafc;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#jazzy-tabs .related-widget-wrapper a:hover {
+    background: #f1f5f9;
+    transform: scale(1.05);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #jazzy-tabs .nav-tabs {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    #jazzy-tabs .nav-link {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+    
+    #jazzy-tabs .tab-content {
+        padding-left: 0;
+    }
+    
+    #jazzy-tabs .card-body {
+        padding: 16px;
+    }
+    
+    #jazzy-tabs .form-group label {
+        margin-bottom: 8px;
+    }
+}
+
+/* BOQ Items table styling (if in tabs) */
+#boq_items-group {
+    margin-top: 20px;
+}
+
+#boq_items-group table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#boq_items-group th {
+    background: #f8fafc;
+    padding: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#boq_items-group td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+#boq_items-group tr:hover {
+    background: #fff7ed;
+}
+
+#boq_items-group .add-row {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+#boq_items-group .add-row a {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+#boq_items-group .add-row a:hover {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    transform: translateY(-2px);
+}

@@ -4,6 +4,7 @@ from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.utils import timezone
 import uuid
 
+
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('pm', 'Project Manager'),
@@ -79,10 +80,17 @@ class Project(models.Model):
         return [level.level_name for level in self.get_approval_flow()]
     
     def update_progress(self):
-        boq_items = self.boq_items.filter(level=3)
+        """Update project progress based on Level 1 BOQ items only (Trade / Work Category)"""
+        boq_items = self.boq_items.filter(level=1)
+        
         if boq_items.exists():
-            total_planned = sum(item.planned_quantity * item.rate for item in boq_items)
-            total_approved = sum(item.approved_quantity * item.rate for item in boq_items)
+            total_planned = 0
+            total_approved = 0
+            
+            for item in boq_items:
+                total_planned += float(item.planned_quantity) * float(item.rate)
+                total_approved += float(item.approved_quantity) * float(item.rate)
+            
             self.progress = (total_approved / total_planned * 100) if total_planned > 0 else 0
             self.actual_cost = total_approved
             self.save()
@@ -169,9 +177,101 @@ class BOQItem(models.Model):
         return 0.0
 
 
+# ============================================================================
+# COMPLIANCE GATEKEEPER MODELS
+# ============================================================================
+
+class ProjectComplianceRequirement(models.Model):
+    """Compliance requirements that must be met to access a project"""
+    
+    REQUIREMENT_TYPES = [
+        ('certificate', 'Certificate/License'),
+        ('training', 'Training Completed'),
+        ('insurance', 'Insurance'),
+        ('safety_cert', 'Safety Certification'),
+        ('contract', 'Signed Contract'),
+        ('background_check', 'Background Check'),
+        ('induction', 'Site Induction'),
+        ('other', 'Other'),
+    ]
+    
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='compliance_requirements')
+    requirement_type = models.CharField(max_length=50, choices=REQUIREMENT_TYPES, default='other')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    is_mandatory = models.BooleanField(default=True)
+    requires_upload = models.BooleanField(default=False)
+    requires_approval = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.project.name} - {self.title}"
+    
+    class Meta:
+        ordering = ['project', '-is_mandatory', 'title']
+
+
+class ContractorComplianceStatus(models.Model):
+    """Tracks compliance status for each contractor per project"""
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
+    ]
+    
+    contractor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compliance_statuses')
+    requirement = models.ForeignKey(ProjectComplianceRequirement, on_delete=models.CASCADE, related_name='contractor_statuses')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_compliance')
+    document_url = models.TextField(blank=True, null=True)
+    document_name = models.CharField(max_length=255, blank=True)
+    notes = models.TextField(blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.contractor.username} - {self.requirement.title} ({self.status})"
+    
+    class Meta:
+        unique_together = ['contractor', 'requirement']
+
+
+class ContractorProjectAccess(models.Model):
+    """Controls access to projects based on compliance"""
+    
+    contractor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project_access')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='contractor_access')
+    is_allowed = models.BooleanField(default=False)
+    granted_at = models.DateTimeField(null=True, blank=True)
+    granted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='granted_access')
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['contractor', 'project']
+    
+    def __str__(self):
+        return f"{self.contractor.username} → {self.project.name} ({'✅' if self.is_allowed else '⛔'})"
+
+
+# ============================================================================
+# DAILY LOG MODELS
+# ============================================================================
+
 class DailyLog(models.Model):
     STATUS_CHOICES = [
-        ('submitted', 'Pending'),
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('partially_approved', 'Partially Approved'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
@@ -249,12 +349,12 @@ class DailyLog(models.Model):
     next_day_plan = models.TextField(blank=True)
     resources_needed = models.TextField(blank=True)
     
-    # Simple Approval Tracking
-    current_level_index = models.IntegerField(default=0)
-    total_approval_levels = models.IntegerField(default=1)
+    # Approval Tracking
+    current_level_index = models.IntegerField(default=0, help_text="Current approval level index (0-based)")
+    total_approval_levels = models.IntegerField(default=0)
     
     # Status
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='submitted')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(null=True, blank=True)
     
     reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_logs')
@@ -267,29 +367,134 @@ class DailyLog(models.Model):
     def __str__(self):
         return f"Daily Log - {self.project.name} - {self.log_date}"
     
-    def approve(self, reviewer, comments=None, seal_number=None, ip_address=None):
+    def get_current_level(self):
+        """Get the current approval level object"""
+        levels = self.project.get_approval_flow()
+        if self.current_level_index < len(levels):
+            return levels[self.current_level_index]
+        return None
+    
+    def get_levels_approved_count(self):
+        """Get number of approved levels"""
+        return ApprovalRecord.objects.filter(daily_log=self, action='approve').count()
+    
+    def can_user_approve(self, user):
+        """
+        Check if user can approve at current level.
+        Superusers can always approve.
+        """
+        if user.is_superuser:
+            return True
+        
+        current_level = self.get_current_level()
+        if not current_level:
+            return False
+        
+        if current_level.required_user and current_level.required_user != user:
+            return False
+        
+        if current_level.required_role:
+            profile = getattr(user, 'profile', None)
+            if not profile or profile.role != current_level.required_role:
+                return False
+        
+        return True
+    
+    def approve(self, reviewer, comments, seal_number=None, ip_address=None):
+        """Approve at current level and move to next"""
         from django.db.models import Sum
         
-        self.status = 'approved'
-        self.reviewed_by = reviewer
-        self.reviewed_at = timezone.now()
+        # Superusers can approve instantly without approval levels
+        if reviewer.is_superuser:
+            for entry in self.entries.all():
+                entry.boq_item.approved_quantity += entry.quantity
+                entry.boq_item.save()
+                parent = entry.boq_item.parent
+                while parent:
+                    total = parent.children.aggregate(total=Sum('approved_quantity'))['total'] or 0
+                    parent.approved_quantity = total
+                    parent.save()
+                    parent = parent.parent
+            
+            self.status = 'approved'
+            self.current_level_index = 0
+            self.save()
+            self.project.update_progress()
+            
+            # Create approval record
+            ApprovalRecord.objects.create(
+                daily_log=self,
+                level_order=0,
+                level_name="Superuser Approval",
+                approver=reviewer,
+                action='approve',
+                comments=comments or 'Superuser approval',
+                seal_number=seal_number or '',
+                ip_address=ip_address
+            )
+            return
+        
+        # For non-superusers, follow the approval workflow
+        current_level = self.get_current_level()
+        
+        if not current_level:
+            raise ValueError("No approval level found")
+        
+        if not self.can_user_approve(reviewer):
+            raise PermissionError("User not authorized to approve at this level")
+        
+        # Create approval record
+        ApprovalRecord.objects.create(
+            daily_log=self,
+            level_order=current_level.level_order,
+            level_name=current_level.level_name,
+            approver=reviewer,
+            action='approve',
+            comments=comments,
+            seal_number=seal_number or '',
+            ip_address=ip_address
+        )
+        
+        # Move to next level or mark as fully approved
+        levels = list(self.project.get_approval_flow())
+        
+        if self.current_level_index + 1 >= len(levels):
+            self.status = 'approved'
+            self.current_level_index = len(levels)
+        else:
+            self.current_level_index += 1
+            self.status = 'partially_approved'
+        
         self.save()
         
-        # Update BOQ quantities
-        for entry in self.entries.all():
-            entry.boq_item.approved_quantity += entry.quantity
-            entry.boq_item.save()
-            
-            parent = entry.boq_item.parent
-            while parent:
-                total_approved = parent.children.aggregate(total=Sum('approved_quantity'))['total'] or 0
-                parent.approved_quantity = total_approved
-                parent.save()
-                parent = parent.parent
-        
-        self.project.update_progress()
+        # Update BOQ if fully approved
+        if self.status == 'approved':
+            for entry in self.entries.all():
+                entry.boq_item.approved_quantity += entry.quantity
+                entry.boq_item.save()
+                # Update parent items
+                parent = entry.boq_item.parent
+                while parent:
+                    total_approved = parent.children.aggregate(total=Sum('approved_quantity'))['total'] or 0
+                    parent.approved_quantity = total_approved
+                    parent.save()
+                    parent = parent.parent
+            self.project.update_progress()
     
     def reject(self, reviewer, comments, ip_address=None):
+        """Reject at current level"""
+        current_level = self.get_current_level()
+        
+        ApprovalRecord.objects.create(
+            daily_log=self,
+            level_order=current_level.level_order if current_level else 0,
+            level_name=current_level.level_name if current_level else 'Unknown',
+            approver=reviewer,
+            action='reject',
+            comments=comments,
+            ip_address=ip_address
+        )
+        
         self.status = 'rejected'
         self.rejection_reason = comments
         self.save()
@@ -309,14 +514,15 @@ class DailyLogEntry(models.Model):
 
 
 class ApprovalRecord(models.Model):
+    """Record of each approval action"""
     ACTION_CHOICES = [
         ('approve', 'Approved'),
         ('reject', 'Rejected'),
     ]
     
     daily_log = models.ForeignKey(DailyLog, on_delete=models.CASCADE, related_name='approval_records')
-    level_order = models.IntegerField(default=0)
-    level_name = models.CharField(max_length=50, default='Approval')
+    level_order = models.IntegerField()
+    level_name = models.CharField(max_length=50)
     approver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='approval_actions')
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     comments = models.TextField(blank=True)
@@ -325,8 +531,12 @@ class ApprovalRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.daily_log} - {self.action}"
+        return f"{self.daily_log} - {self.level_name}: {self.action}"
 
+
+# ============================================================================
+# INSPECTION MODELS
+# ============================================================================
 
 class InspectionType(models.Model):
     name = models.CharField(max_length=100)
@@ -416,6 +626,10 @@ class InspectionRecord(models.Model):
         self.inspection_point.save()
 
 
+# ============================================================================
+# ASSIGNMENT MODELS
+# ============================================================================
+
 class ProjectAssignment(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='assignments')
     contractor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_projects')
@@ -430,6 +644,10 @@ class ProjectAssignment(models.Model):
     def __str__(self):
         return f"{self.project.name} -> {self.contractor.username}"
 
+
+# ============================================================================
+# RFI MODELS
+# ============================================================================
 
 class RFI(models.Model):
     PRIORITY_CHOICES = [
@@ -468,6 +686,10 @@ class RFI(models.Model):
         return f"{self.rfi_number} - {self.title}"
 
 
+# ============================================================================
+# CHANGE ORDER MODELS
+# ============================================================================
+
 class ChangeOrder(models.Model):
     TYPE_CHOICES = [
         ('addition', 'Addition'),
@@ -504,6 +726,10 @@ class ChangeOrder(models.Model):
         return f"{self.change_number} - {self.title}"
 
 
+# ============================================================================
+# MATERIAL SUBMITTAL MODELS
+# ============================================================================
+
 class MaterialSubmittal(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
@@ -535,3 +761,59 @@ class MaterialSubmittal(models.Model):
     
     def __str__(self):
         return f"{self.submittal_number} - {self.title}"
+
+
+# ============================================================================
+# INVOICE MODELS
+# ============================================================================
+
+class Invoice(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('sent', 'Sent'),
+        ('paid', 'Paid'),
+        ('overdue', 'Overdue'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='invoices')
+    invoice_number = models.CharField(max_length=50, unique=True)
+    invoice_date = models.DateField()
+    due_date = models.DateField(null=True, blank=True)
+    
+    client_name = models.CharField(max_length=255, blank=True)
+    client_address = models.TextField(blank=True)
+    
+    subtotal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=15.00)
+    tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    
+    notes = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_invoices')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.invoice_number} - {self.project.name}"
+    
+    class Meta:
+        ordering = ['-created_at']
+
+
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
+    description = models.CharField(max_length=255)
+    quantity = models.DecimalField(max_digits=15, decimal_places=2, default=1)
+    unit_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    
+    def save(self, *args, **kwargs):
+        self.amount = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.description} - {self.amount}"

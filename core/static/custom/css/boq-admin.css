@@ -1,0 +1,454 @@
+/* ============================================================================
+   ITesho Custom Admin CSS - Complete
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   CORE ADMIN STYLES
+   ------------------------------------------------------------------------- */
+
+/* Dashboard cards */
+.dashboard .card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+/* Primary buttons - ITesho Orange */
+.btn-primary,
+.button.primary,
+input[type="submit"].primary {
+    background-color: #f97316 !important;
+    border-color: #f97316 !important;
+}
+
+.btn-primary:hover,
+.button.primary:hover,
+input[type="submit"].primary:hover {
+    background-color: #ea580c !important;
+    border-color: #ea580c !important;
+}
+
+/* Sidebar active items */
+.nav-sidebar .nav-item .nav-link.active {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+}
+
+/* Custom badge colors */
+.badge-success,
+.field-status_badge .badge-success {
+    background-color: #10b981;
+}
+
+.badge-warning,
+.field-status_badge .badge-warning {
+    background-color: #f59e0b;
+}
+
+.badge-danger,
+.field-status_badge .badge-danger {
+    background-color: #ef4444;
+}
+
+.badge-info,
+.field-status_badge .badge-info {
+    background-color: #3b82f6;
+}
+
+/* Form inputs focus */
+.form-control:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #f97316 !important;
+    box-shadow: 0 0 0 0.2rem rgba(249,115,22,0.25) !important;
+    outline: none;
+}
+
+/* Table hover effect */
+.table-hover tbody tr:hover,
+#result_list tbody tr:hover {
+    background-color: rgba(249,115,22,0.08) !important;
+}
+
+/* ----------------------------------------------------------------------------
+   BOQ ADMIN STYLES - Compact Table & Visual Indicators
+   ------------------------------------------------------------------------- */
+
+/* Make the table more compact */
+.inline-group .tabular tr.has_original td {
+    padding: 6px 8px !important;
+    vertical-align: middle !important;
+}
+
+/* Level 1 - Parent rows (Trade / Work Category) */
+#boq_items-group .form-row[data-item-code-length="1"],
+tr[data-item-code-length="1"] {
+    background-color: #f0f9ff !important;
+    border-left: 4px solid #f97316 !important;
+    font-weight: 600 !important;
+}
+
+/* Level 2 - Section rows */
+#boq_items-group .form-row[data-item-code-length="2"],
+tr[data-item-code-length="2"] {
+    background-color: #f8fafc !important;
+    font-weight: 500 !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+/* Level 3+ - Detail rows */
+#boq_items-group .form-row[data-item-code-length="3"],
+tr[data-item-code-length="3"] {
+    background-color: #ffffff !important;
+}
+
+/* Make item codes monospace for better readability */
+.field-item_code input,
+td.field-item_code {
+    font-family: 'Courier New', 'SF Mono', monospace !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+}
+
+/* Progress-like indicator for approved quantity */
+.field-approved_quantity input,
+td.field-approved_quantity {
+    border-left: 3px solid #10b981 !important;
+    background-color: rgba(16,185,129,0.02) !important;
+}
+
+/* Planned quantity styling - Orange accent */
+.field-planned_quantity input,
+td.field-planned_quantity {
+    border-left: 3px solid #f97316 !important;
+    background-color: rgba(249,115,22,0.02) !important;
+}
+
+/* Rate styling - Blue accent */
+.field-rate input,
+td.field-rate {
+    border-left: 3px solid #3b82f6 !important;
+    background-color: rgba(59,130,246,0.02) !important;
+}
+
+/* Hover effect on rows */
+#boq_items-group .form-row:hover,
+#boq_items-group tr:hover {
+    background-color: #fef3c7 !important;
+    transition: background-color 0.2s ease !important;
+}
+
+/* Progress bar styling for inline display */
+.progress-bar-mini {
+    display: inline-block;
+    width: 80px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 6px;
+}
+
+.progress-bar-mini-fill {
+    background: linear-gradient(90deg, #f97316, #fbbf24);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s;
+}
+
+/* ----------------------------------------------------------------------------
+   PROJECT WIZARD STYLES
+   ------------------------------------------------------------------------- */
+
+/* Wizard container */
+.wizard-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Wizard header - ITesho gradient */
+.wizard-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #f97316 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.wizard-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.wizard-header p {
+    margin: 8px 0 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+/* Progress section */
+.progress-section {
+    padding: 20px 30px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.progress-bar {
+    background: #e2e8f0;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #f97316, #fbbf24);
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+/* Steps indicator */
+.steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.step {
+    text-align: center;
+    flex: 1;
+}
+
+.step-circle {
+    width: 32px;
+    height: 32px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #64748b;
+    transition: all 0.3s;
+}
+
+.step.active .step-circle {
+    background: #f97316;
+    color: white;
+    box-shadow: 0 2px 8px rgba(249,115,22,0.3);
+}
+
+.step.completed .step-circle {
+    background: #10b981;
+    color: white;
+}
+
+.step-label {
+    font-size: 11px;
+    margin-top: 6px;
+    color: #64748b;
+}
+
+.step.active .step-label {
+    color: #f97316;
+    font-weight: 600;
+}
+
+/* Wizard form rows */
+.wizard-content .form-row {
+    margin-bottom: 20px;
+}
+
+.wizard-content label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1e293b;
+}
+
+.wizard-content input,
+.wizard-content textarea,
+.wizard-content select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.wizard-content input:focus,
+.wizard-content textarea:focus,
+.wizard-content select:focus {
+    outline: none;
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+}
+
+.wizard-content .help {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 5px;
+}
+
+/* Wizard buttons */
+.wizard-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 30px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn-wizard {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-wizard-primary {
+    background: #f97316;
+    color: white;
+}
+
+.btn-wizard-primary:hover {
+    background: #ea580c;
+    transform: translateY(-1px);
+}
+
+.btn-wizard-secondary {
+    background: #64748b;
+    color: white;
+}
+
+.btn-wizard-secondary:hover {
+    background: #475569;
+}
+
+.btn-wizard-outline {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+}
+
+.btn-wizard-outline:hover {
+    background: #f1f5f9;
+}
+
+/* ----------------------------------------------------------------------------
+   DAILY LOG ADMIN STYLES
+   ------------------------------------------------------------------------- */
+
+/* Status badges styling */
+.field-status_badge span {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Status colors */
+.status-submitted {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.status-approved {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.status-rejected {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.status-partially_approved {
+    background-color: #dbeafe;
+    color: #2563eb;
+}
+
+.status-draft {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Daily log entries styling */
+.daily-log-entries {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+/* ----------------------------------------------------------------------------
+   RESPONSIVE ADJUSTMENTS
+   ------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .inline-group .tabular tr.has_original td {
+        padding: 4px !important;
+        font-size: 11px !important;
+    }
+    
+    .wizard-container {
+        margin: 20px;
+        width: auto;
+    }
+    
+    .wizard-header {
+        padding: 20px;
+    }
+    
+    .wizard-header h1 {
+        font-size: 20px;
+    }
+    
+    .progress-section,
+    .wizard-content,
+    .wizard-buttons {
+        padding: 15px 20px;
+    }
+    
+    .step-label {
+        font-size: 9px;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   PRINT STYLES
+   ------------------------------------------------------------------------- */
+@media print {
+    .sidebar,
+    .navbar,
+    .wizard-buttons,
+    .progress-section {
+        display: none !important;
+    }
+    
+    .wizard-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .wizard-header {
+        background: #1e3a5f;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

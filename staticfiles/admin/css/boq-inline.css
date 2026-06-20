@@ -1,0 +1,49 @@
+/* Stylish BOQ inline inside project edit page */
+.inline-group .tabular tr.has_original td {
+    padding: 8px 12px !important;
+    vertical-align: middle !important;
+}
+
+/* Highlight the BOQ section */
+.inline-group h2 {
+    background: linear-gradient(135deg, #f97316, #ea580c) !important;
+    color: white !important;
+    padding: 10px 16px !important;
+    border-radius: 8px 8px 0 0 !important;
+    font-weight: 600 !important;
+}
+
+/* Parent rows styling */
+.dynamic-boq_items {
+    transition: background-color 0.2s ease;
+}
+
+.dynamic-boq_items:hover {
+    background-color: #fff7ed !important;
+}
+
+/* Progress column */
+.field-progress_display {
+    width: 120px !important;
+}
+
+/* Make item codes monospace */
+.field-item_code input {
+    font-family: 'Courier New', monospace !important;
+    font-weight: bold !important;
+}
+
+/* Add button styling */
+.add-row a {
+    background: #f97316 !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    margin-top: 10px !important;
+    display: inline-block !important;
+}
+
+.add-row a:hover {
+    background: #ea580c !important;
+}
