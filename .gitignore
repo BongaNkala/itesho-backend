@@ -1,43 +1,21 @@
 # Python
 __pycache__/
 *.py[cod]
-*.class
-*.so
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+*.sqlite3
+*.sqlite3.*
+*.bak
+*.backup-*
 
-# Django
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-/media/
-/static/
-*.pid
-
-# Environment variables
+# Environments
+myenv/
 .env
-.env.local
-.env.*.local
+.venv/
+venv/
 
-# IDE
+# Static files (Django collects these, don't commit them)
+staticfiles/
+
+# OS / IDE
+.DS_Store
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Coverage
-.coverage
-htmlcov/
-
-# Migrations (optional - include if you want to track migrations)
-# */migrations/*.py
-# init/migrations/__init__.py
