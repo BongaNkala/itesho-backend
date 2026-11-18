@@ -6,20 +6,20 @@ from .views import (
     CustomTokenObtainPairView, 
     DashboardStatsView, 
     BOQItemViewSet,
-    DailyLogViewSet, 
+    FilteredDailyLogViewSet, 
     PendingApprovalsView, 
     ContractorProjectsView, 
     ContractorBOQView,
     MonthlyInspectionsView, 
-    InvoiceViewSet,
+    FilteredInvoiceViewSet,
     ComplianceViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet, basename='project')
 router.register(r'boq', BOQItemViewSet, basename='boq')
-router.register(r'daily-logs', DailyLogViewSet, basename='daily-log')
-router.register(r'invoices', InvoiceViewSet, basename='invoice')
+router.register(r'daily-logs', FilteredDailyLogViewSet, basename='daily-log')
+router.register(r'invoices', FilteredInvoiceViewSet, basename='invoice')
 router.register(r'compliance', ComplianceViewSet, basename='compliance')
 
 urlpatterns = [
@@ -41,3 +41,5 @@ urlpatterns = [
     # Include router URLs (no api/ prefix)
     path('', include(router.urls)),
 ]
+from core.views import upload_photo
+path('api/upload-photo/', upload_photo, name='upload_photo'),

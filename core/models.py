@@ -47,6 +47,8 @@ class ApprovalLevel(models.Model):
 
 
 class Project(models.Model):
+    municipality = models.ForeignKey("Municipality", on_delete=models.CASCADE, related_name="projects", null=True, blank=True)
+    project_manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="managed_projects")
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('active', 'Active'),
@@ -817,3 +819,32 @@ class InvoiceItem(models.Model):
     
     def __str__(self):
         return f"{self.description} - {self.amount}"
+class Municipality(models.Model):
+    name = models.CharField(max_length=255)
+    director = models.ForeignKey(User, on_delete=models.PROTECT, related_name='managed_municipalities')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class AuditLog(models.Model):
+    ACTION_TYPES = [
+        ('CREATE', 'Create'),
+        ('UPDATE', 'Update'),
+        ('DELETE', 'Delete')
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='audit_logs')
+    action = models.CharField(max_length=10, choices=ACTION_TYPES)
+    model_name = models.CharField(max_length=50)
+    record_id = models.IntegerField()
+    old_value = models.JSONField(null=True, blank=True)
+    new_value = models.JSONField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.timestamp} - {self.user} - {self.action} on {self.model_name}"

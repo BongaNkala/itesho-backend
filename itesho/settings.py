@@ -155,65 +155,50 @@ SIMPLE_JWT = {
 # ============================================================================
 # JAZZMIN ADMIN THEME CONFIGURATION - CLEAN VERSION (NO BROKEN LINKS)
 # ============================================================================
-JAZZMIN_SETTINGS = {
-    "site_title": "ITesho Admin",
-    "site_header": "ITesho",
-    "site_brand": "ITesho",
-    "welcome_sign": "Welcome to ITesho Admin",
-    "copyright": "ITesho",
-    "search_model": ["core.Project"],
-    
-    "topmenu_links": [
-        {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "Projects", "url": "admin:core_project_changelist", "permissions": ["core.view_project"]},
-    ],
-    
-    "usermenu_links": [
-        {"model": "auth.user"},
-    ],
-    
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "hide_apps": [],
-    "hide_models": [],
-    
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "core.Project": "fas fa-building",
-        "core.BOQItem": "fas fa-file-invoice-dollar",
-        "core.DailyLog": "fas fa-clipboard-list",
-    },
-    
-    "default_icon_parents": "fas fa-chevron-circle-right",
-    "default_icon_children": "fas fa-circle",
-    "related_modal_active": False,
-    "custom_css": "admin/css/custom.css",
-    "custom_js": None,
-    "use_google_fonts_cdn": True,
-    "show_ui_builder": False,
-    "changeform_format": "horizontal_tabs",
-    "language_chooser": False,
-}
 
 # ============================================================================
 # JAZZMIN UI TWEAKS
 # ============================================================================
+
+
+JAZZMIN_SETTINGS = {
+    "show_ui_builder": False,
+    "show_usermenu": True,           # This ensures the user dropdown appears
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Director Dashboard", "url": "/admin/director-dashboard/", "permissions": ["core.view_project"]},
+    ],
+    "usermenu_links": [
+        {"name": "Logout", "url": "/admin/logout/", "icon": "fas fa-sign-out-alt"},
+    ],
+}
+
 JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
     "brand_colour": "navbar-orange",
     "accent": "accent-orange",
-    "navbar": "navbar-orange navbar-dark",
+    "navbar": "navbar-dark bg-dark",
+    "no_navbar_border": False,
     "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
     "sidebar_fixed": True,
     "sidebar": "sidebar-dark-orange",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": True,
     "theme": "default",
-    "default_theme_mode": "light",
+    "dark_mode_theme": None,
     "button_classes": {
-        "primary": "btn-outline-primary",
-        "secondary": "btn-outline-secondary",
-        "info": "btn-outline-info",
-        "warning": "btn-outline-warning",
-        "danger": "btn-outline-danger",
-        "success": "btn-outline-success"
-    },
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
 }

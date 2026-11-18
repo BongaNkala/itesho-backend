@@ -1,0 +1,89 @@
+{% extends "admin/base_site.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">👑 Director's Portfolio: {{ municipality_name }}</h2>
+
+    <!-- Overall Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Projects</h5>
+                    <h2 class="mb-0">{{ total_projects }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Budget</h5>
+                    <h2 class="mb-0">R {{ total_budget|floatformat:2|intcomma }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Total Actual Cost</h5>
+                    <h2 class="mb-0">R {{ total_actual|floatformat:2|intcomma }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Overall Progress</h5>
+                    <h2 class="mb-0">{{ overall_progress }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Individual Project Analysis -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">📊 Project Allocations & Analysis</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Assigned PM</th>
+                        <th>Status</th>
+                        <th>Budget</th>
+                        <th>Actual</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in projects %}
+                    <tr>
+                        <td><strong>{{ p.name }}</strong></td>
+                        <td><span class="badge bg-secondary">{{ p.pm }}</span></td>
+                        <td>{{ p.status|title }}</td>
+                        <td>R {{ p.budget|floatformat:2|intcomma }}</td>
+                        <td>R {{ p.actual|floatformat:2|intcomma }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar {% if p.progress > 100 %}bg-danger{% elif p.progress > 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                     role="progressbar" style="width: {{ p.progress }}%;" 
+                                     aria-valuenow="{{ p.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ p.progress }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No projects assigned to this municipality yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -35,37 +35,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-
-
-# ============================================================================
-# PROJECT VIEWSET
-# ============================================================================
-
-class ProjectViewSet(viewsets.ModelViewSet):
-    serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        user = self.request.user
-        # If contractor, only show projects they have access to (compliance approved)
-        if hasattr(user, 'profile') and user.profile.role == 'contractor':
-            # Get projects where contractor has access
-            access_ids = ContractorProjectAccess.objects.filter(
-                contractor=user,
-                is_allowed=True
-            ).values_list('project_id', flat=True)
-            return Project.objects.filter(id__in=access_ids)
-        return Project.objects.all()
-    
-    def perform_create(self, serializer):
-        serializer.save(project_manager=self.request.user)
-
-
-# ============================================================================
-# BOQ VIEWSET
-# ============================================================================
+    # Allow standard login for all users. The API querysets will handle the restrictions.
+    pass
 
 class BOQItemViewSet(viewsets.ModelViewSet):
     serializer_class = BOQItemSerializer
@@ -574,7 +549,40 @@ class ComplianceViewSet(viewsets.ViewSet):
                 'has_access': access and access.is_allowed,
                 'access_granted_at': access and access.granted_at,
             })
-        
+
+        @action(detail=False, methods=['get'], url_path='check-access')
+        def check_access(self, request):
+            """
+            Check if the current user has access to a project.
+            """
+            project_id = request.query_params.get('project_id')
+            if not project_id:
+                return Response(
+                    {'error': 'Project ID is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+    
+                user = request.user
+    
+                # Superusers have access to everything
+                if user.is_superuser:
+                    return Response({'has_access': True})
+                
+                # Check if user is assigned to this project
+                has_access = ContractorProjectAccess.objects.filter(
+                    project_id=project_id,
+                    contractor=user
+                ).exists()
+                
+                # Also check ProjectAssignment (fallback)
+                if not has_access:
+                    has_access = ProjectAssignment.objects.filter(
+                        project_id=project_id,
+                        contractor=user
+                    ).exists()
+                
+                return Response({'has_access': has_access})    
+                    
         return Response(summary)
 
 
@@ -677,3 +685,169 @@ class MonthlyInspectionsView(APIView):
         } for insp in inspections]
         
         return Response(data)
+# class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        # 1. DIRECTOR: Sees all projects they oversee
+        if user.managed_municipalities.exists():
+            return Project.objects.filter(municipality__director=user)
+            
+        # 2. PM: Sees only projects assigned to them
+        elif user.managed_projects.exists():
+            return Project.objects.filter(project_manager=user)
+            
+        # 3. CONTRACTOR: Sees projects they are allowed to access
+        else:
+            return Project.objects.filter(contractor_access__contractor=user, contractor_access__is_allowed=True)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        # Auto-assign municipality if the Director creates it
+        if user.managed_municipalities.exists():
+            municipality = user.managed_municipalities.first()
+            serializer.save(municipality=municipality)
+        else:
+            raise permissions.PermissionDenied("Only a Municipality Director can create a new project.")
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        # 1. DIRECTOR: Sees all projects they oversee
+        if user.managed_municipalities.exists():
+            return Project.objects.filter(municipality__director=user)
+            
+        # 2. PM: Sees only projects assigned to them
+        elif user.managed_projects.exists():
+            return Project.objects.filter(project_manager=user)
+            
+        # 3. CONTRACTOR: Sees projects they are allowed to access
+        else:
+            return Project.objects.filter(contractor_access__contractor=user, contractor_access__is_allowed=True)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        # Auto-assign municipality if the Director creates it
+        if user.managed_municipalities.exists():
+            municipality = user.managed_municipalities.first()
+            serializer.save(municipality=municipality)
+        else:
+            raise permissions.PermissionDenied("Only a Municipality Director can create a new project.")
+
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.db.models import Sum, Count
+from .models import Project
+
+class DirectorDashboardView(UserPassesTestMixin, TemplateView):
+    template_name = "admin/director_dashboard.html"
+
+    def test_func(self):
+        # Only allow users who are directors of a municipality
+        return self.request.user.managed_municipalities.exists()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        municipality = user.managed_municipalities.first()
+        
+        projects = Project.objects.filter(municipality=municipality).select_related('project_manager')
+        
+        # Overall Stats
+        total_projects = projects.count()
+        total_budget = projects.aggregate(Sum('budget'))['budget__sum'] or 0
+        total_actual = projects.aggregate(Sum('actual_cost'))['actual_cost__sum'] or 0
+        
+        overall_progress = (total_actual / total_budget * 100) if total_budget > 0 else 0
+
+        # Individual Project Analysis
+        project_data = []
+        for p in projects:
+            pm_name = p.project_manager.username if p.project_manager else "Unassigned"
+            progress = (p.actual_cost / p.budget * 100) if p.budget > 0 else 0
+            project_data.append({
+                'name': p.name,
+                'pm': pm_name,
+                'budget': p.budget,
+                'actual': p.actual_cost,
+                'progress': round(progress, 2),
+                'status': p.status
+            })
+
+        context.update({
+            'municipality_name': municipality.name,
+            'total_projects': total_projects,
+            'total_budget': total_budget,
+            'total_actual': total_actual,
+            'overall_progress': round(overall_progress, 2),
+            'projects': project_data,
+        })
+        return context
+
+
+# ============================================================================
+# CUSTOM FILTERS FOR DASHBOARD DATA
+# ============================================================================
+
+class FilteredDailyLogViewSet(viewsets.ModelViewSet):
+    queryset = DailyLog.objects.all()
+    serializer_class = DailyLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = super().get_queryset()
+        if not user.is_superuser:
+            if user.managed_municipalities.exists():
+                return qs.filter(project__municipality__director=user)
+            elif user.managed_projects.exists():
+                return qs.filter(project__project_manager=user)
+            else:
+                return qs.filter(project__contractor_access__contractor=user)
+        return qs
+
+class FilteredInvoiceViewSet(viewsets.ModelViewSet):
+    queryset = Invoice.objects.all()
+    serializer_class = InvoiceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = super().get_queryset()
+        if not user.is_superuser:
+            if user.managed_municipalities.exists():
+                return qs.filter(project__municipality__director=user)
+            elif user.managed_projects.exists():
+                return qs.filter(project__project_manager=user)
+            else:
+                return qs.filter(project__contractor_access__contractor=user)
+        return qs
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_photo(request):
+    if 'file' not in request.FILES:
+        return Response({'error': 'No file provided'}, status=400)
+    
+    file = request.FILES['file']
+    file_name = default_storage.save(f'photos/{file.name}', ContentFile(file.read()))
+    
+    # Return the absolute URL to the saved file
+    file_url = request.build_absolute_uri(default_storage.url(file_name))
+    return Response({'url': file_url})

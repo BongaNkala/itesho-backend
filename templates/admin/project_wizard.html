@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <div id="content-main">
+    <h1>Project Wizard</h1>
+    <p>This wizard is currently under maintenance. Please use the standard form below to create your project.</p>
+    <p style="margin-top: 20px;">
+      <a href="{% url 'admin:core_project_add' %}" class="button default" style="background: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Standard Add Project Form</a>
+    </p>
+  </div>
+{% endblock %}
